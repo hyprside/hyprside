@@ -183,15 +183,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # (Opcional) Restaurar cache anterior para maximizar reaproveitamento
-      - name: Restore cache (merged build)
-        uses: actions/cache@v4
-        with:
-          path: ${{ env.BUILD_DIR }}
-          key: build-merged-${{ runner.os }}-${{ hashFiles('**/manifest.toml', 'packages/hyprpacker/**') }}
-          restore-keys: |
-            build-merged-${{ runner.os }}-
-
       # Descarregar os três artifacts de build/ (nomes distintos)
       - name: Download build dir (kernel)
         uses: actions/download-artifact@v4
