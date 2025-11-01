@@ -78,7 +78,6 @@ jobs:
           name: kernel
           path: build/kernel/out/kernel
 
-      # 🛠️ Corrige permissões antes de enviar o artefacto
       - name: Fix permissions for upload
         run: |
           sudo chmod -R a+r build/kernel || true
@@ -211,10 +210,3 @@ jobs:
         with:
           name: build-dir-merged
           path: build/
-
-      # Salvar cache p/ próximas runs (chave estável por conteúdo)
-      - name: Save cache (merged build)
-        uses: actions/cache/save@v4
-        with:
-          path: ${{ env.BUILD_DIR }}
-          key: build-merged-${{ runner.os }}-${{ hashFiles('**/manifest.toml', 'packages/hyprpacker/**') }}
