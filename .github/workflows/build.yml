@@ -157,6 +157,9 @@ jobs:
           name: build-dir-hyprpacker
           path: build
 
+      - name: Delete old images
+        run: rm build/images -rf
+
       - name: Build system image
         run: chmod +x ./build/hyprpacker && ./build/hyprpacker image assemble
 
