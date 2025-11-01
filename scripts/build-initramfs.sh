@@ -64,10 +64,10 @@ chmod +x "$ROOTFS_DIR/init"
 
 echo "📦 Packing initramfs..."
 mkdir -p "$BUILD_DIR"
-
+export OLDPWD=$PWD
 pushd "$ROOTFS_DIR" >/dev/null
 mkdir -p $(dirname "$OLDPWD/$1")
-rm "$OLDPWD/$1"
+rm "$OLDPWD/$1" -f
 find . | cpio -o -H newc | zstd -19 -T0 -o "$OLDPWD/$1"
 popd >/dev/null
 

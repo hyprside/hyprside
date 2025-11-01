@@ -1,0 +1,163 @@
+name: Build Hyprside Artifacts
+
+on:
+  push:
+
+env:
+  BUILD_DIR: build
+  HYPRPACKER_DIR: packages/hyprpacker
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # ===========================================================
+  # 1️⃣ Build hyprpacker (shared dependency)
+  # ===========================================================
+  build-hyprpacker:
+    name: Build hyprpacker
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository (with submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Restore build cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ env.BUILD_DIR }}
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: hyprpacker-${{ runner.os }}-${{ hashFiles('packages/hyprpacker/**') }}
+          restore-keys: |
+            hyprpacker-${{ runner.os }}-
+
+      - name: Build hyprpacker binary
+        working-directory: ${{ env.HYPRPACKER_DIR }}
+        run: cargo build --release
+
+      - name: Copy hyprpacker binary to build/
+        run: |
+          mkdir -p $BUILD_DIR
+          cp $HYPRPACKER_DIR/target/release/hyprpacker $BUILD_DIR/hyprpacker
+
+      - name: Upload hyprpacker artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: hyprpacker-binary
+          path: build/hyprpacker
+
+  # ===========================================================
+  # 2️⃣ Build kernel
+  # ===========================================================
+  build-kernel:
+    name: Build Kernel
+    runs-on: ubuntu-latest
+    needs: [build-hyprpacker]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Download hyprpacker
+        uses: actions/download-artifact@v4
+        with:
+          name: hyprpacker-binary
+          path: build
+
+      - name: Restore build cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.BUILD_DIR }}
+          key: build-kernel-${{ runner.os }}-${{ hashFiles('**/kernel/**') }}
+          restore-keys: |
+            build-kernel-${{ runner.os }}-
+
+      - name: Build kernel
+        run: |
+          chmod +x build/hyprpacker
+          ./build/hyprpacker kernel build
+
+      - name: Upload kernel artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: kernel
+          path: build/kernel/out/kernel
+
+  # ===========================================================
+  # 3️⃣ Build initrd
+  # ===========================================================
+  build-initrd:
+    name: Build Initrd
+    runs-on: ubuntu-latest
+    needs: [build-hyprpacker]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Download hyprpacker
+        uses: actions/download-artifact@v4
+        with:
+          name: hyprpacker-binary
+          path: build
+
+      - name: Restore build cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.BUILD_DIR }}
+          key: build-initrd-${{ runner.os }}-${{ hashFiles('**/packages/init-stage-1/**') }}
+          restore-keys: |
+            build-initrd-${{ runner.os }}-
+
+      - name: Build initrd image
+        run: |
+          chmod +x build/hyprpacker
+          ./build/hyprpacker initrd build
+
+      - name: Upload initrd artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: initrd
+          path: build/initrd/initrd.img
+
+  # ===========================================================
+  # 4️⃣ Build system image
+  # ===========================================================
+  build-image:
+    name: Build System Image
+    runs-on: ubuntu-latest
+    needs: [build-hyprpacker]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Download hyprpacker
+        uses: actions/download-artifact@v4
+        with:
+          name: hyprpacker-binary
+          path: build
+
+      - name: Restore build cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.BUILD_DIR }}
+          key: build-image-${{ runner.os }}-${{ hashFiles('**/manifest.toml', '**/sysroot/**') }}
+          restore-keys: |
+            build-image-${{ runner.os }}-
+
+      - name: Build system image
+        run: |
+          chmod +x build/hyprpacker
+          ./build/hyprpacker image assemble
+
+      - name: Upload system image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: system-image
+          path: build/images/*.squashfs
