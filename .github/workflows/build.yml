@@ -2,6 +2,7 @@ name: Build Hyprside Artifacts
 
 on:
   push:
+  workflow_dispatch:
 
 env:
   BUILD_DIR: build
@@ -9,19 +10,15 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  # ===========================================================
-  # 1️⃣ Build hyprpacker (shared dependency)
-  # ===========================================================
   build-hyprpacker:
     name: Build hyprpacker
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository (with submodules)
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
+      - uses: actions/checkout@v4
+        with: { submodules: recursive }
 
-      - name: Restore build cache
+      # Cache p/ runs futuras
+      - name: Restore cache (hyprpacker + build)
         uses: actions/cache@v4
         with:
           path: |
@@ -29,83 +26,79 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: hyprpacker-${{ runner.os }}-${{ hashFiles('packages/hyprpacker/**') }}
-          restore-keys: |
-            hyprpacker-${{ runner.os }}-
+          key: build-hyprpacker-${{ runner.os }}-${{ hashFiles('packages/hyprpacker/**') }}
 
-      - name: Build hyprpacker binary
+      - name: Build hyprpacker
         working-directory: ${{ env.HYPRPACKER_DIR }}
         run: cargo build --release
 
-      - name: Copy hyprpacker binary to build/
+      - name: Place binary in build/
         run: |
           mkdir -p $BUILD_DIR
           cp $HYPRPACKER_DIR/target/release/hyprpacker $BUILD_DIR/hyprpacker
+          chmod +x $BUILD_DIR/hyprpacker
 
-      - name: Upload hyprpacker artifact
+      # Artifact único deste job
+      - name: Upload build dir (hyprpacker)
         uses: actions/upload-artifact@v4
         with:
-          name: hyprpacker-binary
-          path: build/hyprpacker
+          name: build-dir-hyprpacker
+          path: build/
 
-  # ===========================================================
-  # 2️⃣ Build kernel
-  # ===========================================================
   build-kernel:
     name: Build Kernel
     runs-on: ubuntu-latest
     needs: [build-hyprpacker]
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
+      - uses: actions/checkout@v4
+        with: { submodules: recursive }
 
-      - name: Download hyprpacker
+      # Recebe o build/ do job anterior
+      - name: Download build dir (hyprpacker)
         uses: actions/download-artifact@v4
         with:
-          name: hyprpacker-binary
+          name: build-dir-hyprpacker
           path: build
 
-      - name: Restore build cache
+      # Cache para runs futuras (parte do kernel)
+      - name: Restore cache (kernel)
         uses: actions/cache@v4
         with:
           path: ${{ env.BUILD_DIR }}
-          key: build-kernel-${{ runner.os }}-${{ hashFiles('**/kernel/**') }}
+          key: build-kernel-${{ runner.os }}-${{ hashFiles('build/kernel/out/kernel') }}
           restore-keys: |
             build-kernel-${{ runner.os }}-
 
       - name: Build kernel
-        run: |
-          chmod +x build/hyprpacker
-          ./build/hyprpacker kernel build
+        run: chmod +x ./build/hyprpacker && ./build/hyprpacker kernel build
 
-      - name: Upload kernel artifact
+      - name: Upload kernel
         uses: actions/upload-artifact@v4
         with:
           name: kernel
           path: build/kernel/out/kernel
 
-  # ===========================================================
-  # 3️⃣ Build initrd
-  # ===========================================================
+      - name: Upload build dir (kernel)
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-dir-kernel
+          path: build/
+
   build-initrd:
     name: Build Initrd
     runs-on: ubuntu-latest
     needs: [build-hyprpacker]
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
+      - uses: actions/checkout@v4
+        with: { submodules: recursive }
 
-      - name: Download hyprpacker
+      - name: Download build dir (hyprpacker)
         uses: actions/download-artifact@v4
         with:
-          name: hyprpacker-binary
+          name: build-dir-hyprpacker
           path: build
 
-      - name: Restore build cache
+      - name: Restore cache (initrd)
         uses: actions/cache@v4
         with:
           path: ${{ env.BUILD_DIR }}
@@ -113,37 +106,36 @@ jobs:
           restore-keys: |
             build-initrd-${{ runner.os }}-
 
-      - name: Build initrd image
-        run: |
-          chmod +x build/hyprpacker
-          ./build/hyprpacker initrd build
+      - name: Build initrd
+        run: chmod +x ./build/hyprpacker && ./build/hyprpacker initrd build
 
-      - name: Upload initrd artifact
+      - name: Upload initrd
         uses: actions/upload-artifact@v4
         with:
           name: initrd
           path: build/initrd/initrd.img
 
-  # ===========================================================
-  # 4️⃣ Build system image
-  # ===========================================================
+      - name: Upload build dir (initrd)
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-dir-initrd
+          path: build/
+
   build-image:
     name: Build System Image
     runs-on: ubuntu-latest
     needs: [build-hyprpacker]
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
+      - uses: actions/checkout@v4
+        with: { submodules: recursive }
 
-      - name: Download hyprpacker
+      - name: Download build dir (hyprpacker)
         uses: actions/download-artifact@v4
         with:
-          name: hyprpacker-binary
+          name: build-dir-hyprpacker
           path: build
 
-      - name: Restore build cache
+      - name: Restore cache (image)
         uses: actions/cache@v4
         with:
           path: ${{ env.BUILD_DIR }}
@@ -152,12 +144,71 @@ jobs:
             build-image-${{ runner.os }}-
 
       - name: Build system image
-        run: |
-          chmod +x build/hyprpacker
-          ./build/hyprpacker image assemble
+        run: chmod +x ./build/hyprpacker && ./build/hyprpacker image assemble
 
-      - name: Upload system image artifact
+      - name: Upload system image
         uses: actions/upload-artifact@v4
         with:
           name: system-image
           path: build/images/*.squashfs
+
+      - name: Upload build dir (image)
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-dir-image
+          path: build/
+
+  merge-build-dir:
+    name: Merge build/ from all jobs + save cache
+    runs-on: ubuntu-latest
+    needs: [build-kernel, build-initrd, build-image]
+    steps:
+      - uses: actions/checkout@v4
+
+      # (Opcional) Restaurar cache anterior para maximizar reaproveitamento
+      - name: Restore cache (merged build)
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.BUILD_DIR }}
+          key: build-merged-${{ runner.os }}-${{ hashFiles('**/manifest.toml', 'packages/hyprpacker/**') }}
+          restore-keys: |
+            build-merged-${{ runner.os }}-
+
+      # Descarregar os três artifacts de build/ (nomes distintos)
+      - name: Download build dir (kernel)
+        uses: actions/download-artifact@v4
+        with:
+          name: build-dir-kernel
+          path: build-kernel
+      - name: Download build dir (initrd)
+        uses: actions/download-artifact@v4
+        with:
+          name: build-dir-initrd
+          path: build-initrd
+      - name: Download build dir (image)
+        uses: actions/download-artifact@v4
+        with:
+          name: build-dir-image
+          path: build-image
+
+      # Mesclar para ./build (preserva subpastas distintas; último wins em conflitos)
+      - name: Merge build dirs
+        run: |
+          mkdir -p build
+          rsync -a build-kernel/ build/
+          rsync -a build-initrd/ build/
+          rsync -a build-image/ build/
+
+      # Artifact do build/ final (debug/consumo posterior)
+      - name: Upload merged build dir
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-dir-merged
+          path: build/
+
+      # Salvar cache p/ próximas runs (chave estável por conteúdo)
+      - name: Save cache (merged build)
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ env.BUILD_DIR }}
+          key: build-merged-${{ runner.os }}-${{ hashFiles('**/manifest.toml', 'packages/hyprpacker/**') }}
