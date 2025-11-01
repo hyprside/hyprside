@@ -73,6 +73,10 @@ jobs:
       - name: Build kernel
         run: chmod +x ./build/hyprpacker && ./build/hyprpacker kernel build
 
+      - name: Delete hyprpacker
+        run: rm build/hyprpacker -f
+        if: always()
+
       - name: Upload kernel
         uses: actions/upload-artifact@v4
         with:
@@ -115,6 +119,10 @@ jobs:
       - name: Build initrd
         run: chmod +x ./build/hyprpacker && ./build/hyprpacker initrd build
 
+      - name: Delete hyprpacker
+        run: rm build/hyprpacker -f
+        if: always()
+
       - name: Upload initrd
         uses: actions/upload-artifact@v4
         with:
@@ -151,6 +159,10 @@ jobs:
 
       - name: Build system image
         run: chmod +x ./build/hyprpacker && ./build/hyprpacker image assemble
+
+      - name: Delete hyprpacker
+        run: rm build/hyprpacker -f
+        if: always()
 
       - name: Upload system image
         uses: actions/upload-artifact@v4
