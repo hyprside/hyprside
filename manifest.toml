@@ -1,0 +1,29 @@
+#:schema packages/hyprpacker/hyprpacker-schema.json
+
+version = "0.0.1-dev"
+[initrd]
+build_script = "scripts/build-initramfs.sh"
+[kernel]
+url = "https://git.kernel.org/torvalds/t/linux-6.18-rc3.tar.gz"
+
+[kernel.options]
+FRAMEBUFFER_CONSOLE="n"
+FRAMEBUFFER_CONSOLE_DEFERRED_TAKEOVER="n"
+FRAMEBUFFER_CONSOLE_DETECT_PRIMARY="n"
+FRAMEBUFFER_CONSOLE_ROTATION="n"
+DRM_PANIC="y"
+DRM_RADEON="y"
+DRM_AMDGPU="y"
+DRM_NOUVEAU="y"
+DRM_I915="y"
+DRM_VGEM="y"
+DRM_VKMS="y"
+DRM_VMWGFX="y"
+DRM_GMA500="y"
+DRM_UDL="y"
+DRM_AST="y"
+DRM_MGAG200="y"
+DRM_QXL="y"
+DRM_VIRTIO_GPU="y"
+DRM_VIRTIO_GPU_KMS="y"
+DRM_PANEL="y"

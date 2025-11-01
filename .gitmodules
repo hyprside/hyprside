@@ -1,0 +1,3 @@
+[submodule "packages/hyprpacker"]
+	path = packages/hyprpacker
+	url = https://github.com/hyprside/hyprpacker
