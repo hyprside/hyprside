@@ -78,6 +78,12 @@ jobs:
           name: kernel
           path: build/kernel/out/kernel
 
+      # 🛠️ Corrige permissões antes de enviar o artefacto
+      - name: Fix permissions for upload
+        run: |
+          sudo chmod -R a+r build/kernel || true
+          sudo chown -R $(whoami):$(whoami) build/kernel || true
+
       - name: Upload build dir (kernel)
         uses: actions/upload-artifact@v4
         with:
