@@ -54,13 +54,6 @@ jobs:
       - uses: actions/checkout@v4
         with: { submodules: recursive }
 
-      # Recebe o build/ do job anterior
-      - name: Download build dir (hyprpacker)
-        uses: actions/download-artifact@v4
-        with:
-          name: build-dir-hyprpacker
-          path: build
-
       # Cache para runs futuras (parte do kernel)
       - name: Restore cache (kernel)
         uses: actions/cache@v4
@@ -69,6 +62,13 @@ jobs:
           key: build-kernel-${{ runner.os }}-${{ hashFiles('build/kernel/out/kernel') }}
           restore-keys: |
             build-kernel-${{ runner.os }}-
+
+      # Recebe o build/ do job anterior
+      - name: Download build dir (hyprpacker)
+        uses: actions/download-artifact@v4
+        with:
+          name: build-dir-hyprpacker
+          path: build
 
       - name: Build kernel
         run: chmod +x ./build/hyprpacker && ./build/hyprpacker kernel build
@@ -102,12 +102,6 @@ jobs:
       - uses: actions/checkout@v4
         with: { submodules: recursive }
 
-      - name: Download build dir (hyprpacker)
-        uses: actions/download-artifact@v4
-        with:
-          name: build-dir-hyprpacker
-          path: build
-
       - name: Restore cache (initrd)
         uses: actions/cache@v4
         with:
@@ -115,6 +109,12 @@ jobs:
           key: build-initrd-${{ runner.os }}-${{ hashFiles('**/packages/init-stage-1/**') }}
           restore-keys: |
             build-initrd-${{ runner.os }}-
+
+      - name: Download build dir (hyprpacker)
+        uses: actions/download-artifact@v4
+        with:
+          name: build-dir-hyprpacker
+          path: build
 
       - name: Build initrd
         run: chmod +x ./build/hyprpacker && ./build/hyprpacker initrd build
@@ -143,12 +143,6 @@ jobs:
       - uses: actions/checkout@v4
         with: { submodules: recursive }
 
-      - name: Download build dir (hyprpacker)
-        uses: actions/download-artifact@v4
-        with:
-          name: build-dir-hyprpacker
-          path: build
-
       - name: Restore cache (image)
         uses: actions/cache@v4
         with:
@@ -156,6 +150,12 @@ jobs:
           key: build-image-${{ runner.os }}-${{ hashFiles('**/manifest.toml', '**/sysroot/**') }}
           restore-keys: |
             build-image-${{ runner.os }}-
+
+      - name: Download build dir (hyprpacker)
+        uses: actions/download-artifact@v4
+        with:
+          name: build-dir-hyprpacker
+          path: build
 
       - name: Build system image
         run: chmod +x ./build/hyprpacker && ./build/hyprpacker image assemble
