@@ -25,9 +25,10 @@ jobs:
             ${{ env.BUILD_DIR }}
             ~/.cargo/registry
             ~/.cargo/git
-            target
+            packages/hyprpacker/target
           key: build-hyprpacker-${{ runner.os }}-${{ hashFiles('packages/hyprpacker/**') }}
-
+          restore-keys: |
+            build-hyprpacker-${{ runner.os }}-
       - name: Build hyprpacker
         working-directory: ${{ env.HYPRPACKER_DIR }}
         run: cargo build --release
