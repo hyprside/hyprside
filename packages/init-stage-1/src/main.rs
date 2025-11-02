@@ -17,7 +17,11 @@ fn main() {
     let system_partition_path =
         mount_system_partition(&args).expect("Failed to mount system partition");
     dbg!(&args, &system_partition_path);
-    ls(system_partition_path);
+    ls(&system_partition_path);
+    let system_root_path =
+        mount_system_image(system_partition_path).expect("Failed to mount system partition");
+    ls(&system_root_path);
+
 }
 
 fn ls(path: impl Into<PathBuf>) {
@@ -72,4 +76,27 @@ fn mount_system_partition(args: &Args) -> io::Result<PathBuf> {
         MountFlags::empty(),
     )?;
     Ok(SYSTEMP_PATH.into())
+}
+
+fn mount_system_image(systemp: impl Into<PathBuf>) -> io::Result<PathBuf> {
+		let systemp = systemp.into();
+    let system_img = format!("{}/system.squashfs", systemp.display());
+    const SYSTEM_PATH: &str = "/system";
+
+    // Ensure target mountpoint exists
+    fs::create_dir_all(SYSTEM_PATH)?;
+
+    // Ensure source image exists
+    if !PathBuf::from(&system_img).exists() {
+        return Err(io::Error::new(
+            io::ErrorKind::NotFound,
+            format!("System image not found: {}", system_img),
+        ));
+    }
+
+    // Mount the squashfs image
+    mount(&system_img, SYSTEM_PATH, "squashfs", MountFlags::RDONLY | MountFlags::NODEV | MountFlags::NOEXEC)?;
+
+    println!("Mounted {} to {}", system_img, SYSTEM_PATH);
+    Ok(SYSTEM_PATH.into())
 }
