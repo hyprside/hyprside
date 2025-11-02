@@ -1,6 +1,6 @@
 # Hyprside
 
-**Hyprside** is a next-generation immutable Linux operating system built around modern UI principles, GPU acceleration, and declarative configuration.
+**Hyprside** is a next-generation immutable Linux operating system built around modern UI principles and GPU acceleration.
 It combines native performance, deep system integration, and full user customization — without sacrificing determinism or security.
 
 ---
