@@ -71,7 +71,7 @@ jobs:
           path: build
 
       - name: Build kernel
-        run: chmod +x ./build/hyprpacker && ./build/hyprpacker kernel build
+        run: chmod +x ./build/hyprpacker && rm build/kernel/out/kernel.hash -f &&  ./build/hyprpacker kernel build
 
       - name: Delete hyprpacker
         run: rm build/hyprpacker -f
