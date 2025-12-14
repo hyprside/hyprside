@@ -25,7 +25,7 @@ Hyprside is a love letter to the Linux kernel — a demonstration of what it can
 | **HyprUI** | Declarative immediate-mode UI framework (Rust + Skia + Clay) |
 | **HyprDE** | Complete desktop environment built with HyprUI |
 | **HyprTheme** | System-wide theming and visual identity manager that works consistently across toolkits and apps |
-| **HyprSessionManager** | A replacement for the Linux TTY system, enabling smooth transitions between screens |
+| **Shift** | A replacement for the Linux TTY system, enabling smooth transitions between screens |
 | **Hyprinit** | Minimal and purpose-built init system designed specifically for Hyprside |
 | **Hyprpacker** | Unified build system for the kernel, image, and initrd |
 | **Kernel Bombproof** | Hardened Linux kernel fork with patches to prevent UI freezes under heavy workloads |
