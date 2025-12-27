@@ -1,20 +1,19 @@
-# Hyprside
+# EverythingOS
 
-**Hyprside** is a next-generation immutable Linux operating system built around modern UI principles and GPU acceleration.
+**EverythingOS** is a next-generation immutable Linux operating system built around modern UI principles and GPU acceleration.
 It combines native performance, deep system integration, and full user customization — without sacrificing determinism or security.
 
 ---
 
 ## 🧭 Philosophy
 
-Hyprside is a love letter to the Linux kernel — a demonstration of what it can truly become.
+EverythingOS is a love letter to the Linux kernel — a demonstration of what it can truly become.
 
 - Takes inspiration from mobile operating systems like Android and iOS, and from Apple’s UX/UI philosophy
 - The base system is **immutable**, delivered as a **SquashFS image**
 - User configuration is stored in the **HyprRegistry**, not traditional dotfiles
-- The entire UI stack is powered by **HyprUI**, a GPU-native Rust framework
+- The entire UI stack is powered by **EverythingUI**, a GPU-native Rust framework
 - The compositor is a fork of **Hyprland**, adapted for non-technical users
-- Designed to be **daemonless** wherever possible — fewer background processes, more CPU for your apps
 
 ---
 
@@ -34,7 +33,7 @@ Hyprside is a love letter to the Linux kernel — a demonstration of what it can
 
 ## ⚙️ Build Pipeline Overview
 
-Hyprside is fully built via **Hyprpacker**:
+Hyprside is fully built via **EverythihgPacker**:
 
 1. `manifest.toml` defines the system components
 2. Hyprpacker compiles the **kernel**, **initrd**, and all **packages**
@@ -42,7 +41,7 @@ Hyprside is fully built via **Hyprpacker**:
 4. You can test it directly in QEMU with UEFI boot
 
 ```bash
-hyprpacker vm run
+everythihgpacker vm run
 ````
 
 This command performs a full build and automatically boots the OS.
@@ -52,12 +51,11 @@ This command performs a full build and automatically boots the OS.
 ## 🧱 Repository Structure
 
 ```
-hyprside/
+everythingos/
  ├── packages/
- │   ├── hyprpacker/           # Build tool
- │   ├── hyprinit/             # Stage-1 init
- │   ├── hyprui/               # UI framework
- │   ├── hyprde/               # Desktop environment
+ │   ├── EverythingPacker/           # Build tool
+ │   ├── EverythingInit/             # Stage-1 init
+ │   ├── EverythingDE/               # Desktop environment
  │   └── ...
  ├── system_root/              # Base system contents (mounted as SquashFS)
  ├── build/                    # Generated artifacts
@@ -72,7 +70,7 @@ hyprside/
 * **Immutable core** → The system is separated into 2 partitions: User Data and System Data
   * **System Data** contains the immutable system image that is swapped on every update
   * **User Data** contains the user's files and apps that were installed
-* **Centralized configuration** → the **HyprRegistry** replaces scattered config files, allowing everything that would normally require a terminal to be configured from the settings app
+* **Centralized configuration** → the **registry** replaces scattered config files, allowing everything that would normally require a terminal to be configured from the settings app
 * **UI-first system** → all core applications are built with HyprUI
 * **Performance-first** → static Rust binaries, no unnecessary layers
 * **Hot-reload everything** → configuration changes apply instantly; the compositor never restarts
@@ -89,4 +87,4 @@ hyprside/
 
 ## 🪪 License
 
-Hyprside is distributed under the **MIT License**.
+EverythingOS is distributed under the **MIT License**.
