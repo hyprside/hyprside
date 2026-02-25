@@ -2,9 +2,9 @@
 set -euo pipefail
 
 # ================================================================
-# Hyprside Initramfs Builder
+# Ardos OS Initramfs Builder
 # ================================================================
-# This script builds the initramfs.img used by Hyprside.
+# This script builds the initramfs.img used by Ardos OS.
 # It compiles the init (stage 1) binary statically with musl,
 # validates it, and packs it into a minimal initramfs image.
 # ================================================================

@@ -1,4 +1,4 @@
-name: Build Hyprside Artifacts
+name: Build Ardos OS Artifacts
 
 on:
   push:
@@ -6,50 +6,50 @@ on:
 
 env:
   BUILD_DIR: build
-  HYPRPACKER_DIR: packages/hyprpacker
+  ARDOS_PACKER_DIR: packages/ardos-packer
   CARGO_TERM_COLOR: always
 
 jobs:
-  build-hyprpacker:
-    name: Build hyprpacker
+  build-ardos-packer:
+    name: Build ardos-packer
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with: { submodules: recursive }
 
       # Cache p/ runs futuras
-      - name: Restore cache (hyprpacker + build)
+      - name: Restore cache (ardos-packer + build)
         uses: actions/cache@v4
         with:
           path: |
             ${{ env.BUILD_DIR }}
             ~/.cargo/registry
             ~/.cargo/git
-            packages/hyprpacker/target
-          key: build-hyprpacker-${{ runner.os }}-${{ hashFiles('packages/hyprpacker/**') }}
+            packages/ardos-packer/target
+          key: build-ardos-packer-${{ runner.os }}-${{ hashFiles('packages/ardos-packer/**') }}
           restore-keys: |
-            build-hyprpacker-${{ runner.os }}-
-      - name: Build hyprpacker
-        working-directory: ${{ env.HYPRPACKER_DIR }}
+            build-ardos-packer-${{ runner.os }}-
+      - name: Build ardos-packer
+        working-directory: ${{ env.ARDOS_PACKER_DIR }}
         run: cargo build --release
 
       - name: Place binary in build/
         run: |
           mkdir -p $BUILD_DIR
-          cp $HYPRPACKER_DIR/target/release/hyprpacker $BUILD_DIR/hyprpacker
-          chmod +x $BUILD_DIR/hyprpacker
+          cp $ARDOS_PACKER_DIR/target/release/ardos-packer $BUILD_DIR/ardos-packer
+          chmod +x $BUILD_DIR/ardos-packer
 
       # Artifact único deste job
-      - name: Upload build dir (hyprpacker)
+      - name: Upload build dir (ardos-packer)
         uses: actions/upload-artifact@v4
         with:
-          name: build-dir-hyprpacker
+          name: build-dir-ardos-packer
           path: build/
 
   build-kernel:
     name: Build Kernel
     runs-on: ubuntu-latest
-    needs: [build-hyprpacker]
+    needs: [build-ardos-packer]
     steps:
       - uses: actions/checkout@v4
         with: { submodules: recursive }
@@ -64,17 +64,17 @@ jobs:
             build-kernel-${{ runner.os }}-
 
       # Recebe o build/ do job anterior
-      - name: Download build dir (hyprpacker)
+      - name: Download build dir (ardos-packer)
         uses: actions/download-artifact@v4
         with:
-          name: build-dir-hyprpacker
+          name: build-dir-ardos-packer
           path: build
 
       - name: Build kernel
-        run: chmod +x ./build/hyprpacker && rm build/kernel/out/kernel.hash -f &&  ./build/hyprpacker kernel build
+        run: chmod +x ./build/ardos-packer && rm build/kernel/out/kernel.hash -f &&  ./build/ardos-packer kernel build
 
-      - name: Delete hyprpacker
-        run: rm build/hyprpacker -f
+      - name: Delete ardos-packer
+        run: rm build/ardos-packer -f
         if: always()
 
       - name: Upload kernel
@@ -97,7 +97,7 @@ jobs:
   build-initrd:
     name: Build Initrd
     runs-on: ubuntu-latest
-    needs: [build-hyprpacker]
+    needs: [build-ardos-packer]
     steps:
       - uses: actions/checkout@v4
         with: { submodules: recursive }
@@ -110,17 +110,17 @@ jobs:
           restore-keys: |
             build-initrd-${{ runner.os }}-
 
-      - name: Download build dir (hyprpacker)
+      - name: Download build dir (ardos-packer)
         uses: actions/download-artifact@v4
         with:
-          name: build-dir-hyprpacker
+          name: build-dir-ardos-packer
           path: build
 
       - name: Build initrd
-        run: chmod +x ./build/hyprpacker && ./build/hyprpacker initrd build
+        run: chmod +x ./build/ardos-packer && ./build/ardos-packer initrd build
 
-      - name: Delete hyprpacker
-        run: rm build/hyprpacker -f
+      - name: Delete ardos-packer
+        run: rm build/ardos-packer -f
         if: always()
 
       - name: Upload initrd
@@ -138,7 +138,7 @@ jobs:
   build-image:
     name: Build System Image
     runs-on: ubuntu-latest
-    needs: [build-hyprpacker]
+    needs: [build-ardos-packer]
     steps:
       - uses: actions/checkout@v4
         with: { submodules: recursive }
@@ -151,20 +151,20 @@ jobs:
           restore-keys: |
             build-image-${{ runner.os }}-
 
-      - name: Download build dir (hyprpacker)
+      - name: Download build dir (ardos-packer)
         uses: actions/download-artifact@v4
         with:
-          name: build-dir-hyprpacker
+          name: build-dir-ardos-packer
           path: build
 
       - name: Delete old images
         run: rm build/images -rf
 
       - name: Build system image
-        run: chmod +x ./build/hyprpacker && ./build/hyprpacker image assemble
+        run: chmod +x ./build/ardos-packer && ./build/ardos-packer image assemble
 
-      - name: Delete hyprpacker
-        run: rm build/hyprpacker -f
+      - name: Delete ardos-packer
+        run: rm build/ardos-packer -f
         if: always()
 
       - name: Upload system image
